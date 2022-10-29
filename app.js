@@ -1,16 +1,39 @@
-var express = require('express');                               //Fetch express module to application
-var path = require('path');                                     //Fetch path module to application
-var app = express();                                            //Initialize app variable with express
-
+// setup our requires
+const { response } = require("express");
+const express = require("express");
+const app = express();
+//Add express handlebar
+const exphbs = require('express-handlebars');
 const fs = require('fs');
-app.use(express.static(path.join(__dirname, 'public')));        //Configure web app to use application root path appended with public as the folder to serve static content
+const port = process.env.port || 3000;   
 
+const HBS = exphbs.create({
+    //Create custom HELPER
+    layoutsDir: "views/layouts", 
+    partialsDir: "views/partials",
+    helpers: {
+        checkOutOfStock : function(stock){
+            if(stock == 0)
+                return "Out of stock";
+            else
+                return stock;
+        },
+        setRowColor : function(stock){
+            if (stock == 0)
+                return "style='background-color:#e7b4b4'";
+        },
+        checkAuthorAvailable(author){
+            if(author!=""){
+                return true;
+            }
+        }
+    }
+});
+//app.engine('.hbs', exphbs.engine({ extname: 'hbs' }))
+app.engine('.hbs', HBS.engine)
+app.set('view engine', '.hbs')
 
-const exphbs = require('express-handlebars');                   //Fetch express-handlebars module for application
-const { all } = require('../Assignment1/routes');
-
-
-const port = process.env.port || 3000;                          //Serve web app of env variable port if defined else on 3000
+//app.use(express.static(path.join(__dirname, 'public')));        //Configure web app to use application root path appended with public as the folder to serve static content
 
 
 var myData = fs.readFileSync('dataset.json');
@@ -19,9 +42,6 @@ var allBooks = JSON.parse(myData);
 // Initialize built-in middleware for urlencoding and json
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.engine('.hbs', exphbs.engine({ extname: 'hbs' }))           //setiing the app engine with .hbs key and value as exphbs.engine({ extname: 'hbs' })           
-app.set('view engine', 'hbs');                                  //Set app parameter view engine to hbs value
-
 
 
 
